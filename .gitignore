@@ -1,0 +1,22 @@
+# Build
+/bin/
+/dist/
+build/
+tmp/
+
+# Lefthook local overrides
+lefthook-local.yml
+.lefthook-local.yml
+
+# Logs
+*.log
+
+# Misc
+local/
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
