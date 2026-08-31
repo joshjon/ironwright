@@ -4,6 +4,14 @@ Simulated GPU inference fleet (`ironwright`) and the control plane that manages
 it (`anvil`). Plan in `BUILD-GUIDE.md`, vocabulary in `CONTEXT.md`, decisions in
 `docs/adr/`.
 
+## Layout
+
+- `cmd/ironwright` and `cmd/anvil` are the two binaries
+- `internal/sim/` is the simulator
+- `internal/anvil/` is the control plane
+- `internal/wire/` holds the wire types and fault identifiers, and is the only
+  package both may import
+
 ## Writing
 
 - Never use em dashes or semicolons. Use full stops, commas or brackets.
@@ -57,3 +65,7 @@ fault. Schema in `catalogue/README.md`.
 
 Write an ADR only when a decision is hard to reverse, surprising without
 context, and the result of a real trade off. Skip it otherwise.
+
+## Checks
+
+`scripts/check-boundaries.sh` enforces ADR-0003. It runs in CI and locally.
