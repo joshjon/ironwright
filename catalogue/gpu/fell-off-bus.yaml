@@ -1,0 +1,43 @@
+id: gpu.fell-off-bus
+layer: gpu
+title: GPU falls off the PCIe bus
+summary: >
+  The driver loses the device entirely. It stays visible in PCIe enumeration out
+  of band, so the card is physically present, but disappears from the driver's
+  device list in band.
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  recoverable:
+    type: bool
+    default: false
+    doc: whether a host reset restores the device
+
+lifecycle:
+  onset: instant
+  duration: until_host_reset
+  self_heals: false
+
+symptoms:
+  redfish:
+    - Processors/{gpu} present, Status.Health = Critical
+    - PCIeDevices/{gpu} present
+  agent.stack:
+    - gpu absent from device list
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 79
+    - per-GPU series for {gpu} stop being emitted
+
+detected_by:
+  domain: gpu
+  test_class: sanity
+
+expected_response: quarantine
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/
+  kind: vendor_doc
+  quote: "Xid 79: GPU has fallen off the bus"

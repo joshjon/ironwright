@@ -1,0 +1,47 @@
+id: gpu.xid-app-fault
+layer: gpu
+title: Application caused XID
+summary: >
+  An illegal memory access or similar fault in user code. Raises an XID and
+  kills the offending process, but the GPU is healthy. Quarantining on this is
+  the classic false positive, and it retires working hardware.
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  xid:
+    type: enum
+    values: [13, 31]
+    default: 31
+  count:
+    type: int
+    default: 1
+    doc: repeats, to exercise rate based scoring
+
+lifecycle:
+  onset: instant
+  duration: instant
+  self_heals: true
+
+symptoms:
+  redfish:
+    - no change, Status.Health stays OK
+  agent.stack:
+    - no change
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = {xid}
+    - ECC counters unchanged
+    - utilisation drops as the process dies
+
+detected_by:
+  domain: gpu
+  test_class: none
+
+expected_response: ignore
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/
+  kind: vendor_doc
+  quote: "Xid 13: Graphics Engine Exception. ... typically an application level bug"
