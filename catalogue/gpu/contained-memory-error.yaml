@@ -1,0 +1,39 @@
+id: gpu.contained-memory-error
+layer: gpu
+title: Contained memory error
+summary: >
+  XID 94. The error is isolated to one application, which must be restarted.
+  Everything else on the GPU is unaffected. Draining the host on this wastes
+  capacity, which is why it is a separate entry from XID 95.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+  - gpu.has_deployment
+
+parameters:
+  count: {type: int, default: 1}
+
+lifecycle: {onset: instant, duration: instant, self_heals: true}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Warning
+  agent.stack:
+    - no change
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 94
+    - framebuffer for the affected deployment released
+    - other deployments on {gpu} unaffected
+
+detected_by: {domain: gpu, test_class: none}
+expected_response: restart_deployment
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
+  kind: vendor_doc
+  quote: >
+    Errors are contained to one application, and the application that
+    encountered this error must be restarted. All other applications running at
+    the time of the Xid are unaffected.

@@ -1,0 +1,39 @@
+id: gpu.missing-from-enumeration
+layer: gpu
+title: GPU absent after reboot
+summary: >
+  The card does not appear at all after a host reset, having been present
+  before. Distinct from falling off the bus, which happens at runtime and leaves
+  the device visible out of band. Here the host simply comes back with fewer
+  GPUs than it had, and a fleet that trusts its last inventory will place onto
+  hardware that is gone.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  reappears_next_boot: {type: bool, default: false, doc: intermittent seating faults do}
+
+lifecycle: {onset: at_boot, duration: until_host_reset, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors collection is short by one member
+    - PCIeDevices/{gpu} absent
+  agent.stack:
+    - gpu absent from device list
+  agent.metrics:
+    - no series emitted for {gpu}
+    - no XID raised, since there is no device to raise one
+
+detected_by: {domain: gpu, test_class: sanity}
+expected_response: quarantine
+
+citation:
+  url: https://www.crusoe.ai/resources/blog/how-crusoe-burn-in-tests-every-node-before-it-reaches-you
+  kind: operator_blog
+  quote: >
+    Sanity performs rapid triage: basic boot, device enumeration, registry
+    connectivity.

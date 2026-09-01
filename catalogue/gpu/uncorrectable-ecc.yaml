@@ -1,0 +1,33 @@
+id: gpu.uncorrectable-ecc
+layer: gpu
+title: Double bit ECC error
+summary: >
+  An uncorrectable memory error. XID 48. Requires a GPU reset or node reboot,
+  and replacement if it recurs after reset or exceeds SRAM threshold flags.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  recurs_after_reset: {type: bool, default: false}
+
+lifecycle: {onset: instant, duration: until_gpu_reset, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Critical
+  agent.stack:
+    - gpu present
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 48
+    - DCGM_FI_DEV_ECC_DBE_VOL_TOTAL increments
+
+detected_by: {domain: gpu, test_class: validation}
+expected_response: drain
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
+  kind: vendor_doc
+  quote: Logged when the GPU detects that an uncorrectable error occurs on the GPU.

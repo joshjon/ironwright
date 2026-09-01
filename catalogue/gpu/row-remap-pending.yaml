@@ -1,0 +1,37 @@
+id: gpu.row-remap-pending
+layer: gpu
+title: Row remapping event, reset pending
+summary: >
+  The GPU has retired a degrading memory row and reserved a spare. XID 63. This
+  is the mechanism working, not a failure, but the remap only takes effect after
+  a GPU reset, so the host carries a pending repair. Individual events are not
+  actionable. Patterns are.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  rows: {type: int, default: 1, doc: rows remapped in this event}
+
+lifecycle: {onset: instant, duration: until_gpu_reset, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Warning
+  agent.stack:
+    - row remap pending flag set
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 63
+    - DCGM_FI_DEV_ROW_REMAP_PENDING = 1
+
+detected_by: {domain: gpu, test_class: validation}
+expected_response: alert
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
+  kind: vendor_doc
+  quote: >
+    Logged when the GPU handles ECC memory errors. On Ampere and later, provides
+    details on row remapper activity for handling correctable errors.

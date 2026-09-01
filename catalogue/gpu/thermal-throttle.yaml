@@ -1,0 +1,40 @@
+id: gpu.thermal-throttle
+layer: gpu
+title: Sustained thermal throttling
+summary: >
+  The GPU clocks down to stay inside its thermal envelope. Often the visible
+  symptom of a cooling fault elsewhere in the node rather than a GPU fault, so
+  the response is to investigate the host, not retire the card. Only appears
+  under sustained load, which is why it needs a stress class test.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+  - gpu.utilisation > 0
+
+parameters:
+  reason: {type: enum, values: [thermal, power_brake, sw_power_cap], default: thermal}
+  temp_c: {type: int, default: 88}
+
+lifecycle: {onset: gradual, duration: while_loaded, self_heals: true}
+
+symptoms:
+  redfish:
+    - Chassis Sensors report elevated inlet or GPU temperature
+  agent.stack:
+    - no change
+  agent.metrics:
+    - DCGM_FI_DEV_GPU_TEMP rises to {temp_c}
+    - DCGM_FI_DEV_CLOCK_THROTTLE_REASONS bitmask sets {reason}
+    - DCGM_FI_DEV_GPU_UTIL stays high while throughput falls
+
+detected_by: {domain: gpu, test_class: stress}
+expected_response: alert
+
+citation:
+  url: https://www.crusoe.ai/resources/blog/how-crusoe-burn-in-tests-every-node-before-it-reaches-you
+  kind: operator_blog
+  quote: >
+    Stress applies sustained or pulsed loads to expose marginal hardware. ...
+    pulsed power load testing that ramps load up and down 20 times.

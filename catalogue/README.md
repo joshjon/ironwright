@@ -31,6 +31,11 @@ Layers: `bmc`, `node`, `gpu`, `stack`.
 | `detected_by` | The burn-in domain and test class that should catch it, or `none` |
 | `expected_response` | `quarantine`, `drain`, `alert` or `ignore`. Where domain judgement lives |
 | `citation` | Required. `url`, `kind`, and a short `quote` |
+| `verified` | `false` until a human has checked the entry against the primary source. Slice R is done for a layer when every entry is `true` |
+
+`expected_response` escalates: `ignore`, `alert`, `restart_deployment` (kill the
+affected deployment, host stays), `drain` (move everything off, host stays in
+the fleet), `quarantine` (drain and exclude by serial).
 
 `symptoms` is where the two surfaces are allowed to contradict each other, which
 is the point of modelling both.

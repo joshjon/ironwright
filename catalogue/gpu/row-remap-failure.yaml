@@ -1,0 +1,43 @@
+id: gpu.row-remap-failure
+layer: gpu
+title: Row remapping failure
+summary: >
+  The GPU can no longer remap around failing memory. XID 64. This is the
+  documented RMA trigger, and the only GPU fault with published numeric
+  thresholds.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  trigger:
+    type: enum
+    values: [eight_per_bank, duplicate_row, global_limit_512]
+    default: eight_per_bank
+    doc: >
+      eight uncorrectable rows already remapped in one bank, a repeat remap of
+      an already remapped row, or 512 total remappings
+
+lifecycle: {onset: instant, duration: permanent, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Critical
+  agent.stack:
+    - row remap failure flag set, readable in band via NVML and out of band via SMBPBI
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 64
+    - DCGM_FI_DEV_ROW_REMAP_FAILURE = 1
+
+detected_by: {domain: gpu, test_class: validation}
+expected_response: quarantine
+
+citation:
+  url: https://docs.nvidia.com/deploy/a100-gpu-mem-error-mgmt/rma-policy-thresholds-for-row-remapping.html
+  kind: vendor_doc
+  quote: >
+    A remapping attempt for an uncorrectable memory error on a bank that already
+    has eight uncorrectable error rows remapped. ... After 512 total remappings
+    for an uncorrectable memory error have occurred.

@@ -1,0 +1,39 @@
+id: gpu.pcie-link-downgraded
+layer: gpu
+title: PCIe link trained at reduced width or generation
+summary: >
+  The card negotiates a lower link than it is capable of, x16 down to x8 or
+  Gen5 down to Gen1. Nothing errors. The GPU is healthy, present, and quietly
+  slower at moving weights, which makes this a silent fault until something
+  measures it. Crusoe validates PCIe link width and speed explicitly.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  width: {type: enum, values: [16, 8, 4, 1], default: 8}
+  gen: {type: enum, values: [5, 4, 3, 1], default: 1}
+
+lifecycle: {onset: at_boot, duration: until_host_reset, self_heals: false}
+
+symptoms:
+  redfish:
+    - PCIeDevices/{gpu} PCIeInterface reports reduced LanesInUse and PCIeType
+  agent.stack:
+    - no change
+  agent.metrics:
+    - DCGM_FI_DEV_PCIE_LINK_WIDTH = {width}
+    - DCGM_FI_DEV_PCIE_LINK_GEN = {gen}
+    - no XID raised
+
+detected_by: {domain: gpu, test_class: validation}
+expected_response: quarantine
+
+citation:
+  url: https://www.crusoe.ai/resources/blog/how-crusoe-burn-in-tests-every-node-before-it-reaches-you
+  kind: operator_blog
+  quote: >
+    Validation runs comprehensive checks: ECC memory, PCIe link speeds, power
+    delivery specifications.

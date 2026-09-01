@@ -1,0 +1,36 @@
+id: gpu.uncontained-memory-error
+layer: gpu
+title: Uncontained memory error
+summary: >
+  XID 95. The error affects every application on the GPU and the card must be
+  reset before anything can restart. The escalated twin of XID 94, and telling
+  them apart is the difference between losing one deployment and losing a host.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  recurs_after_reset: {type: bool, default: false}
+
+lifecycle: {onset: instant, duration: until_gpu_reset, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Critical
+  agent.stack:
+    - gpu present but unusable until reset
+  agent.metrics:
+    - DCGM_FI_DEV_XID_ERRORS = 95
+    - all deployments on {gpu} stop consuming framebuffer
+
+detected_by: {domain: gpu, test_class: none}
+expected_response: drain
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
+  kind: vendor_doc
+  quote: >
+    Errors affect multiple applications, and the affected GPU must be reset
+    before applications can restart.

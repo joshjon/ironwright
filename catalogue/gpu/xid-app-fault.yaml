@@ -2,28 +2,21 @@ id: gpu.xid-app-fault
 layer: gpu
 title: Application caused XID
 summary: >
-  An illegal memory access or similar fault in user code. Raises an XID and
-  kills the offending process, but the GPU is healthy. Quarantining on this is
-  the classic false positive, and it retires working hardware.
+  An out of bounds access, illegal instruction or illegal address in user code.
+  Raises XID 13 or 31 and kills the offending process, but the GPU is healthy.
+  Quarantining on this is the classic false positive and it retires working
+  hardware.
+verified: false
 
 preconditions:
   - host.physical_state == on
   - gpu.present
 
 parameters:
-  xid:
-    type: enum
-    values: [13, 31]
-    default: 31
-  count:
-    type: int
-    default: 1
-    doc: repeats, to exercise rate based scoring
+  xid: {type: enum, values: [13, 31], default: 31}
+  count: {type: int, default: 1, doc: repeats, to exercise rate based scoring}
 
-lifecycle:
-  onset: instant
-  duration: instant
-  self_heals: true
+lifecycle: {onset: instant, duration: instant, self_heals: true}
 
 symptoms:
   redfish:
@@ -35,13 +28,12 @@ symptoms:
     - ECC counters unchanged
     - utilisation drops as the process dies
 
-detected_by:
-  domain: gpu
-  test_class: none
-
+detected_by: {domain: gpu, test_class: none}
 expected_response: ignore
 
 citation:
-  url: https://docs.nvidia.com/deploy/xid-errors/
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
   kind: vendor_doc
-  quote: "Xid 13: Graphics Engine Exception. ... typically an application level bug"
+  quote: >
+    Xid 13 is logged for general user application faults. Typically this is an
+    out-of-bounds error where the user has walked past the end of an array.

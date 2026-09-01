@@ -1,0 +1,37 @@
+id: gpu.ecc-sbe-rate-climbing
+layer: gpu
+title: High single bit ECC error rate
+summary: >
+  Correctable errors arriving at an abnormally high rate. XID 92. Nothing has
+  failed yet and every read still returns correct data, which is what makes this
+  the most useful predictive signal on the card and the easiest one to miss.
+verified: false
+
+preconditions:
+  - host.physical_state == on
+  - gpu.present
+
+parameters:
+  rate_per_hour: {type: int, default: 100}
+  onset_hours: {type: int, default: 24, doc: how long the rate takes to climb}
+
+lifecycle: {onset: gradual, duration: indefinite, self_heals: false}
+
+symptoms:
+  redfish:
+    - Processors/{gpu} Status.Health = Warning
+  agent.stack:
+    - no change
+  agent.metrics:
+    - DCGM_FI_DEV_ECC_SBE_VOL_TOTAL climbs at {rate_per_hour}
+    - DCGM_FI_DEV_XID_ERRORS = 92 once the driver threshold trips
+
+detected_by: {domain: gpu, test_class: validation}
+expected_response: alert
+
+citation:
+  url: https://docs.nvidia.com/deploy/xid-errors/analyzing-xid-catalog.html
+  kind: vendor_doc
+  quote: >
+    Indicates correctable errors are occurring at abnormally high rates,
+    suggesting potential memory degradation or environmental issues.
