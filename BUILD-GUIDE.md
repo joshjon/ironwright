@@ -449,16 +449,12 @@ If nothing else ships, ship this.
 
 ---
 
-# 14. Reading, in order
+# 14. Research
 
-**The operators.** Crusoe on burn-in and AutoClusters. Nebius via ClusterMAX.
-SemiAnalysis ClusterMAX methodology. This shapes the catalogue.
+[docs/research/](docs/research/) is the collated evidence base, seven chapters,
+about 90 minutes. It contains the research rather than links to it.
 
-**The GPU.** NVIDIA XID list. DCGM field reference. GPU Memory Error Management
-guide, for ECC, retirement and row remapping.
-
-**The failures.** Ironic, Metal3 and Tinkerbell issue trackers, for the
-management plane layer.
-
-**The consumers.** controller-runtime. Temporal on workflow ID reuse and
-signals. The Kubernetes scheduler's bin packing plugins, for prior art.
+Chapter 6 is the important one. It falsifies the original premise that hardware
+faults cannot be injected, since NVIDIA ships that in DCGM, and narrows the
+claim to the one that survives: nothing simulates a fleet that is
+simultaneously occupied and degrading.
